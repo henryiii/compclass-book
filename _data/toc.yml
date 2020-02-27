@@ -1,0 +1,106 @@
+# Each entry has the following schema:
+#
+# - title: mytitle   # Title of chapter or section
+#   url: /myurl  # URL of section relative to the /content/ folder.
+#   sections:  # Contains a list of more entries that make up the chapter's sections
+#   not_numbered: true  # if the section shouldn't have a number in the sidebar
+#     (e.g. Introduction or appendices)
+#   expand_sections: true  # if you'd like the sections of this chapter to always
+#     be expanded in the sidebar.
+#   external: true  # Whether the URL is an external link or points to content in the book
+#
+# Below are some special values that trigger specific behavior:
+# - search: true  # Will provide a link to a search page
+# - divider: true  # Will insert a divider in the sidebar
+# - header: My Header  # Will insert a header with no link in the sidebar
+
+#
+# ==============================
+# AUTOMATICALLY GENERATED TOC FILE.
+# You should review the contents of this file, re-order items as you wish,
+# and nest chapters in sections if you wish. The ======= symbols represent 
+# folder breaks.
+# 
+# See the demo `toc.yml` for the right structure to follow. You can 
+# generate a demo book by running `jupyter-book create mybook --demo`
+# ==============================
+
+
+
+- header: Week1
+- url: week1/1_ProgrammingBasics
+- url: week1/0_IntroductionAndLogin
+
+- header: Week2
+- url: week2/0_ObjectOriented
+- url: week2/1_errors
+
+- header: Week3
+- url: week3/1_plotting
+- url: week3/0_numerics
+
+- header: Week4
+- url: week4/2_MC
+- url: week4/1_random_numbers
+- url: week4/IPythonMagics
+- url: week4/RandomWalk
+
+- header: Week5
+- url: week5/3_differentiation
+- url: week5/1_integration
+- url: week5/2_mcintegraate
+
+- header: Week6
+- url: week6/2_string_masses_final
+- url: week6/3_spline_fit
+- url: week6/1_vectorization
+- url: week6/3_fitting
+- url: week6/2_string_masses_sympy
+- url: week6/2_string_masses_classic
+- url: week6/2_linearalgebra
+
+- header: Week7
+- url: week7/1_pandas
+- url: week7/1_worksheet
+- url: week7/2_histograms_cuts
+
+- header: Week8
+- url: week8/3_fittingtools
+- url: week8/2_fitting
+- url: week8/1_generation
+
+- header: Week9
+- url: week9/1_confidence_intervals
+- url: week9/2_mcmc
+- url: week9/3_perfomance
+
+- header: Week10
+- url: week10/1_ode
+- url: week10/1_pro_file
+- url: week10/3_ode_problems
+- url: week10/2_rk
+
+- header: Week11
+- url: week11/2_FFT
+- url: week11/1_fourier_series
+
+- header: Week12
+- url: week12/0_CuPyFractal
+- url: week12/1_fitting
+- url: week12/1_guis
+- url: week12/0_PyBindNumba
+- url: week12/2_signalfiltering
+- url: week12/read_pretty
+- url: week12/common
+
+- header: Week13
+- url: week13/1_review
+
+- header: Week14
+- url: week14/1_graphs
+- url: week14/2_MNIST
+- url: week14/3_sharing
+- url: week14/2_ml
+- header: Optional
+- url: optional/PythonOptionalOverview
+- url: optional/Python3
