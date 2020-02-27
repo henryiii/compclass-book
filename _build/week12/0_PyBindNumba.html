@@ -1,0 +1,517 @@
+---
+redirect_from:
+  - "week12/0-pybindnumba"
+interact_link: content/week12/0_PyBindNumba.ipynb
+kernel_name: python3
+kernel_path: content/week12
+has_widgets: false
+title: |-
+  Pybindnumba
+pagenum: 38
+prev_page:
+  url: /week12/1_guis.html
+next_page:
+  url: /week12/2_signalfiltering.html
+suffix: .ipynb
+search: based github com jpivarski python numpy mini course blob evaluated compilers ipynb
+
+comment: "***PROGRAMMATICALLY GENERATED, DO NOT EDIT. SEE ORIGINAL FILES IN /content***"
+---
+
+    <main class="jupyter-page">
+    <div id="page-info"><div id="page-title">Pybindnumba</div>
+</div>
+    <div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Based on <a href="https://github.com/jpivarski/python-numpy-mini-course/blob/evaluated/6-compilers.ipynb">https://github.com/jpivarski/python-numpy-mini-course/blob/evaluated/6-compilers.ipynb</a> .</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> ipybind
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+
+
+
+<div id="3db24d9f-1628-4c16-8234-25952c9f66dc"></div>
+<div class="output_subarea output_javascript ">
+<script type="text/javascript">
+var element = $('#3db24d9f-1628-4c16-8234-25952c9f66dc');
+
+    require(['notebook/js/codecell'], function(cc) {
+        cc.CodeCell.options_default.highlight_modes['magic_text/x-c++src'] =
+            {reg: [/^\s*%%pybind11/]};
+    });
+    
+</script>
+</div>
+
+</div>
+</div>
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea ">
+
+<style>
+.cm-s-ipython span.cm-variable-3 {
+    color: #208ffb;
+    font-weight: bold;
+}
+</style>
+
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">numba</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">pybind11</span>
+
+#include &lt;complex&gt;
+#include &lt;vector&gt;
+#include &lt;pybind11/numpy.h&gt;
+
+py::array_t&lt;int&gt; quick(int height, int width, int maxiterations) {
+    
+    py::array_t&lt;int&gt; fractal({height, width});
+    
+    auto fractal_uc = fractal.mutable_unchecked&lt;2&gt;();
+    
+    for (int h = 0;  h &lt; height;  h++) {
+        for (int w = 0;  w &lt; width;  w++) {
+            
+            std::complex&lt;double&gt; ci{
+                double(h-1)/height - 1,
+                1.5 * (double(w-1)/width - 1)};
+            
+            std::complex&lt;double&gt; z = ci;
+            fractal_uc(h,w) = maxiterations;
+            for (int i = 0;  i &lt; maxiterations;  i++) {
+                z = z * z + ci;
+                if (std::abs(z) &gt; 2) {
+                    fractal_uc(h, w) = i;
+                    break;
+                }
+            }
+        }
+    }
+    
+    return fractal;
+}
+
+PYBIND11_MODULE(py11fractal, m) {
+    m.def(&quot;quick&quot;, quick);
+}
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="n">quick</span><span class="p">(</span><span class="mi">8000</span><span class="p">,</span> <span class="mi">12000</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 7.45 s, sys: 230 ms, total: 7.68 s
+Wall time: 7.71 s
+</pre>
+</div>
+</div>
+</div>
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([[ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       ...,
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20]], dtype=int32)</pre>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@numba</span><span class="o">.</span><span class="n">vectorize</span>
+<span class="k">def</span> <span class="nf">as_ufunc</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">maxiterations</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">c</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxiterations</span><span class="p">):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">i</span>
+    <span class="k">return</span> <span class="n">maxiterations</span>
+
+<span class="k">def</span> <span class="nf">run_numba_2</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">maxiterations</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span><span class="n">height</span><span class="o">*</span><span class="mi">1</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span><span class="n">width</span><span class="o">*</span><span class="mi">1</span><span class="n">j</span><span class="p">]</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">*</span><span class="mi">1</span><span class="n">j</span>
+    <span class="k">return</span> <span class="n">as_ufunc</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">maxiterations</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="n">run_numba_2</span><span class="p">(</span><span class="mi">8000</span><span class="p">,</span> <span class="mi">12000</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 7.27 s, sys: 1.13 s, total: 8.4 s
+Wall time: 8.5 s
+</pre>
+</div>
+</div>
+</div>
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([[ 0,  0,  0, ..., 10, 10, 20],
+       [ 0,  0,  0, ...,  9, 10, 10],
+       [ 0,  0,  0, ...,  9,  9,  9],
+       ...,
+       [20, 20, 20, ..., 20, 20, 20],
+       [20, 20, 20, ..., 20, 20, 20],
+       [20, 20, 20, ..., 20, 20, 20]])</pre>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
+<span class="k">def</span> <span class="nf">run_numba</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">maxiterations</span><span class="p">):</span>
+    <span class="n">fractal</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">height</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="p">((</span><span class="n">h</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.5</span><span class="n">j</span><span class="o">*</span><span class="p">((</span><span class="n">w</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">c</span>
+            <span class="n">fractal</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">maxiterations</span>
+            
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxiterations</span><span class="p">):</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">fractal</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+                    <span class="k">break</span>
+    <span class="k">return</span> <span class="n">fractal</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="n">run_numba</span><span class="p">(</span><span class="mi">8000</span><span class="p">,</span> <span class="mi">12000</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 5.92 s, sys: 177 ms, total: 6.1 s
+Wall time: 6.1 s
+</pre>
+</div>
+</div>
+</div>
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([[ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       ...,
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20]], dtype=int32)</pre>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">run_numba_p</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">maxiterations</span><span class="p">):</span>
+    <span class="n">fractal</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">numba</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="n">height</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">):</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="p">((</span><span class="n">h</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.5</span><span class="n">j</span><span class="o">*</span><span class="p">((</span><span class="n">w</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">c</span>
+            <span class="n">fractal</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">maxiterations</span>
+            
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxiterations</span><span class="p">):</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">fractal</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+                    <span class="k">break</span>
+    <span class="k">return</span> <span class="n">fractal</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="n">run_numba_p</span><span class="p">(</span><span class="mi">8000</span><span class="p">,</span> <span class="mi">12000</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 9.57 s, sys: 299 ms, total: 9.87 s
+Wall time: 3.07 s
+</pre>
+</div>
+</div>
+</div>
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([[ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       ...,
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20]], dtype=int32)</pre>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="n">run_numba_p</span><span class="p">(</span><span class="mi">8000</span><span class="p">,</span> <span class="mi">12000</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 9.02 s, sys: 326 ms, total: 9.35 s
+Wall time: 2.86 s
+</pre>
+</div>
+</div>
+</div>
+<div class="jb_output_wrapper }}">
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([[ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       ...,
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20],
+       [ 0,  0,  0, ..., 20, 20, 20]], dtype=int32)</pre>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+ 
+
+
+    </main>
+    

@@ -1,0 +1,735 @@
+---
+redirect_from:
+  - "week10/1-pro-file"
+interact_link: content/week10/1_pro_file.ipynb
+kernel_name: sys_python36
+kernel_path: content/week10
+has_widgets: false
+title: |-
+  Week 10 Day 1: (Pro)file
+pagenum: 30
+prev_page:
+  url: /week10/1_ode.html
+next_page:
+  url: /week10/3_ode_problems.html
+suffix: .ipynb
+search: python file data hdf json files lets not read histogram format very root profilers line instead library numpy extension reading often profiler powerful function physt seconds per output buffer libraries small html available several uproot cover last writing version already well lineprofiler better just need histograms custom into nice input text get binary io any storing storage compression configuration its popular formats simple methods pandas week profiling lecture should slow parts program profile deterministic every built cprofile being example directly conda install pip ipython module bit functions called select external except load f np array large easy feeding took pure
+
+comment: "***PROGRAMMATICALLY GENERATED, DO NOT EDIT. SEE ORIGINAL FILES IN /content***"
+---
+
+    <main class="jupyter-page">
+    <div id="page-info"><div id="page-title">Week 10 Day 1: (Pro)file</div>
+</div>
+    <div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Objectives">Objectives<a class="anchor-link" href="#Objectives"> </a></h2><ul>
+<li>Cover profiling (extension of last lecture)</li>
+<li>Cover reading and writing of files</li>
+<li>Start the basics of ODEs</li>
+</ul>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Profiling">Profiling<a class="anchor-link" href="#Profiling"> </a></h2><p>Quick extension of last week's lecture: Remember we said that you should optimize only the slow parts of your program. How do you tell? Profile!</p>
+<p>There are two types of profilers:</p>
+<ol>
+<li>Deterministic profilers: These modify the runtime of the program by tracking every line.</li>
+<li>Sampling profilers: These "sample" every so often.</li>
+</ol>
+<p>The main profiler for Python is the built in <code>cProfile</code> and <code>profile</code> modules (the first being a faster version of the second). Since Python is already interpreted and slow, most profilers for Python are deterministic profilers.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The following example uses the built in profiler directly, as well as <code>line_profiler</code>, from either conda (<code>conda install line_profiler</code> in environment) or pip (<code>pip install --user line-profiler</code>). Line profiler is a powerful, better interface (and IPython extension) for the cProfile module.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">sampler</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">mu_init</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">proposal_width</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mu_prior_mu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mu_prior_sd</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+    <span class="n">mu_current</span> <span class="o">=</span> <span class="n">mu_init</span>
+    <span class="n">posterior</span> <span class="o">=</span> <span class="p">[</span><span class="n">mu_current</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+        <span class="c1"># suggest new position</span>
+        <span class="n">mu_proposal</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">mu_current</span><span class="p">,</span> <span class="n">proposal_width</span><span class="p">)</span><span class="o">.</span><span class="n">rvs</span><span class="p">()</span>
+
+        <span class="c1"># Compute likelihood by multiplying probabilities of each data point</span>
+        <span class="n">likelihood_current</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">mu_current</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span>
+        <span class="n">likelihood_proposal</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">mu_proposal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span>
+        
+        <span class="c1"># Compute prior probability of current and proposed mu        </span>
+        <span class="n">prior_current</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">mu_prior_mu</span><span class="p">,</span> <span class="n">mu_prior_sd</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">mu_current</span><span class="p">)</span>
+        <span class="n">prior_proposal</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">mu_prior_mu</span><span class="p">,</span> <span class="n">mu_prior_sd</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">mu_proposal</span><span class="p">)</span>
+        
+        <span class="n">p_current</span> <span class="o">=</span> <span class="n">likelihood_current</span> <span class="o">*</span> <span class="n">prior_current</span>
+        <span class="n">p_proposal</span> <span class="o">=</span> <span class="n">likelihood_proposal</span> <span class="o">*</span> <span class="n">prior_proposal</span>
+        
+        <span class="c1"># Accept proposal?</span>
+        <span class="n">p_accept</span> <span class="o">=</span> <span class="n">p_proposal</span> <span class="o">/</span> <span class="n">p_current</span>
+        
+        <span class="c1"># Usually would include prior probability, which we neglect here for simplicity</span>
+        <span class="n">accept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p_accept</span>
+        
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">plot_proposal</span><span class="p">(</span><span class="n">mu_current</span><span class="p">,</span> <span class="n">mu_proposal</span><span class="p">,</span> <span class="n">mu_prior_mu</span><span class="p">,</span> <span class="n">mu_prior_sd</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">accept</span><span class="p">,</span> <span class="n">posterior</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">accept</span><span class="p">:</span>
+            <span class="c1"># Update position</span>
+            <span class="n">mu_current</span> <span class="o">=</span> <span class="n">mu_proposal</span>
+        
+        <span class="n">posterior</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mu_current</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">posterior</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">cProfile</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cProfile</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;posterior = sampler(data, samples=1000, mu_init=1.)&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Reading that last page is a bit tricky - we have the "insides" of all the Python functions being called. Let's try <code>line_profiler</code> to just select the <em>one</em> function we care about, and see that line-by-line.</p>
+<p>Like all external packages except matplotlib, we need to load the package as an IPython extension first:</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> line_profiler
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Then, we can use the <code>lprun</code> magic along with the <code>-f function</code> to select a function:</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">lprun</span> -f sampler posterior = sampler(data, samples=1000, mu_init=1.)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Much better! I can easily see what's wrong now. This allows you to <em>target</em> optimizations; often minor changes, like <code>np.stack</code> instead of <code>np.array</code>, may give you large speedups. Parts that are not performance critical can remain clear and easy to read/maintain.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Real life example:</p>
+<ul>
+<li>I had 128 DataFrames of around a million events each, and I wanted to make 128 2D histograms.</li>
+<li>Custom Histogram library Physt was taking 3 seconds per histogram.</li>
+<li>Native Numpy histogram (then feeding that into Physt) took .9 seconds per histogram.</li>
+<li>Custom Numba histogram function (then feeding that into Physt) took 0.1 seconds per histogram.</li>
+</ul>
+<p>At this point, a total of 10-15 seconds for the procedure was fine. Physt histograms as output means I can use the nice OO design to merge and rebin histograms later, by the way.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Files">Files<a class="anchor-link" href="#Files"> </a></h2><p>Let's look at reading in and out data!</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Basic-input/output">Basic input/output<a class="anchor-link" href="#Basic-input/output"> </a></h3><p>As a reminder, this is input output of text or data files in pure Python:</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;tmpfile.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;This is one line</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Second line&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+<span class="c1"># File gets closed here</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;tmpfile.txt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>You can iterate over a file to get lines, or use <code>.readlines</code> to get a list of lines, or <code>.read</code> to just read in (part) of the file. The mode flags can set text vs. binary <code>'b'</code>, read <code>'r'</code>, write <code>'w'</code>, or append <code>'a'</code>.</p>
+<p>The <code>f</code> object is a File Buffer. Quite a few functions and libraries in Python take a buffer - usually they take a file name or an open buffer. You can make a buffer that is attached to your memory instead of a file with <code>io.StringIO</code>.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Serializing-any-objects">Serializing any objects<a class="anchor-link" href="#Serializing-any-objects"> </a></h3><p>Python has a protocol for storing and recovering almost any object called "pickling". This is general purpose, but is often not ideal for large or long term storage, or for communicating data - there is some limitation on Python version, the class code should be similar or the same, and there is no compression. But, it can be handy in a pinch. You can use <code>dump</code> and <code>load</code>, or you can use <code>dumps</code> and <code>loads</code> to input/output directly to a string instead:</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pickle_str</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="s2">&quot;some object&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pickle_str</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">pickle_str</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Use-case:-configuration">Use case: configuration<a class="anchor-link" href="#Use-case:-configuration"> </a></h3><p>Let's look at better ways to do IO for specific cases. Let's look at a common one: storing some "configuration" like data (or any small set of data). As long as the data is small, it's nice to leave it human readable format, in a text file. Here are some popular formats:</p>
+<ol>
+<li><strong>XML</strong>: Famous - HTML is a subset of XML. Very verbose and ugly, and often used with a custom schema.</li>
+<li><strong>JSON</strong>: Popular. A little unfriendly for writing, but clean and simple. A subset of JavaScript makes it web-friendly. Great libraries available.</li>
+<li><strong>INI</strong>: Not well defined, and <em>very</em> limited. Very easy for a human to author, though.</li>
+<li><strong>YAML</strong>: Yet Another Markup Language, popular in some areas. Lots of weird corner cases to the syntax, though.</li>
+<li><strong>TOML</strong>: Simpler version of the thing above. Gaining some use in Python as of late.</li>
+</ol>
+<p>Of these, the best standard library support in Python goes to JSON, so we'll look at that one. It's the best in the list for (small amounts of) general data. For configuration, it's a tossup.</p>
+<p>JSON has the same methods as pickle.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">structure_to_save</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;list&quot;</span><span class="p">,</span><span class="s1">&#39;items&#39;</span><span class="p">,{</span><span class="s2">&quot;dictionary&quot;</span><span class="p">:</span><span class="s2">&quot;Nested&quot;</span><span class="p">,</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">}]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">structure_to_save</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>You can read more at <a href="https://pymotw.com/3/index.html">Python 3 Module of the Week</a>: <a href="https://pymotw.com/3/json/index.html&gt;">json</a> or the <a href="https://docs.python.org/3/library/json.html">official documentation</a>.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Larger-data-storage">Larger data storage<a class="anchor-link" href="#Larger-data-storage"> </a></h3><h4 id="Numpy">Numpy<a class="anchor-link" href="#Numpy"> </a></h4><p>Let's assume we have data in Numpy. We can use one of several Numpy methods to store the data; we can even compress it.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The format is a simple binary one-array-per-file format; you can use <code>savez</code> to save several files into one uncompressed zip file, or <code>savez_compressed</code> to save to a compressed zip file:</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="s1">&#39;tmp.npz&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;tmp.npz&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>While simple, this is still Numpy specific, and is not ideal for cross-language data storage.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="HDF5">HDF5<a class="anchor-link" href="#HDF5"> </a></h4><p>This is a standard format for storing binary structured data with optional compression. It has several nice features, like groups and attributes, that make it very powerful. You need an external library, but Anaconda comes with it by default. Technically, it comes with two. H5py and PyTables; I use HDF5 in C++ also, so I like the fact that H5py looks more like other HDF5 libraries, so I'll cover that. The other one is available with <code>import tables</code>.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;tmp.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
+
+<span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;tmp.h5&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This is a common idiom in modern IO libraries; you treat the file like a dictionary. There are explicit methods if you need to do something fancier (like turn on compression for a dataset). HDF5 has tools to allow you to keep a dataset on file instead of reading it entirely to memory (but I've not had to use those).</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Also, there are great non-Python tools for HDF5 available, like a graphical file viewer.</p>
+<p><font color="grey"></p>
+<blockquote><p>Note for HEP physicists: the ROOT file format has a few features that HDF5 does not, like incremental saving. However, other than small differences, the formats are similar. Except that HDF5 is available everywhere and even if it isn't, it takes something like 5 minutes to build instead of several hours...</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Pandas">Pandas<a class="anchor-link" href="#Pandas"> </a></h4><p>Pandas has very powerful connectors to lots of different formats, including CSV, JSON, Excel, and HDF5. If your data is already a table, just use Pandas!</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;20130101&#39;</span><span class="p">,</span><span class="n">periods</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span><span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="s1">&#39;ABCD&#39;</span><span class="p">))</span>
+<span class="n">df</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="s1">&#39;tmp.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;df&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="s1">&#39;tmp.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;df&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="jb_cell">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Bonus:-Uproot">Bonus: Uproot<a class="anchor-link" href="#Bonus:-Uproot"> </a></h4><p>In HEP, we have a very commonly used and powerful format: ROOT. But getting ROOT to compile is a long (2+ hour) ordeal, and I have yet to get it to work with Anaconda Python on macOS.</p>
+<p>An exciting new library, "uproot" lets you read ROOT files in pure Python without ROOT. The original name was to be micro-root, or $\mu$root, but it became uproot. You've already seen a bit of uproot in the previous lectures.</p>
+<p>Writing files is planned, but still in progress.</p>
+
+</div>
+</div>
+</div>
+</div>
+
+ 
+
+
+    </main>
+    
